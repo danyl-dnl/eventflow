@@ -3,12 +3,15 @@
 // ═══════════════════════════════════════════════
 
 // ── Render capacity monitor + management table ─
-function renderAdmin() {
-    // Live capacity monitor
-    const capList = document.getElementById('adminCapList');
-    capList.innerHTML = events.map(ev => {
-        const pct = fillPct(ev);
-        return `
+async function renderAdmin() {
+    try {
+        const events = await apiFetch("/events");
+
+        // Live capacity monitor
+        const capList = document.getElementById('adminCapList');
+        capList.innerHTML = events.map(ev => {
+            const pct = fillPct(ev);
+            return `
 <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--rule)">
   <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
     <span style="font-size:0.82rem;font-weight:600">${ev.title}</span>
@@ -22,13 +25,13 @@ function renderAdmin() {
     <span style="font-size:0.7rem;color:var(--ink3)">${seatsLeft(ev)} left</span>
   </div>
 </div>`;
-    }).join('');
+        }).join('');
 
-    // Event management table
-    const tbody = document.getElementById('adminTableBody');
-    tbody.innerHTML = events.map(ev => {
-        const pct = fillPct(ev);
-        return `
+        // Event management table
+        const tbody = document.getElementById('adminTableBody');
+        tbody.innerHTML = events.map(ev => {
+            const pct = fillPct(ev);
+            return `
 <tr>
   <td><span style="font-weight:600">${ev.title}</span></td>
   <td>${fmt(ev.date)}</td>
@@ -49,11 +52,15 @@ function renderAdmin() {
       style="color:var(--accent);border-color:var(--accent)">Remove</button>
   </td>
 </tr>`;
-    }).join('');
+        }).join('');
+
+    } catch (err) {
+        toast('Failed to load admin data: ' + err.message, 'error');
+    }
 }
 
-// ── Add new event ──────────────────────────────
-function addEvent() {
+// ── Add new event via API ──────────────────────
+async function addEvent() {
     const title = document.getElementById('a-title').value.trim();
     const cap   = parseInt(document.getElementById('a-cap').value);
     const date  = document.getElementById('a-date').value;
@@ -67,41 +74,53 @@ function addEvent() {
         return;
     }
 
-    const ev = {
-        id:         nextEventId++,
-        title,
-        category:   document.getElementById('a-cat').value,
-        date,
-        time:       document.getElementById('a-time').value,
-        location:   document.getElementById('a-loc').value  || 'TBD',
-        speaker:    document.getElementById('a-spk').value  || 'TBD',
-        capacity:   cap,
-        registered: 0,
-        waitlist:   0,
-        price:      parseInt(document.getElementById('a-price').value) || 0,
-        status:     'upcoming',
-    };
+    const addBtn = document.querySelector('[onclick="addEvent()"]');
+    addBtn.textContent = 'Creating...';
+    addBtn.disabled    = true;
 
-    events.push(ev);
-    ['a-title', 'a-cap', 'a-date', 'a-loc', 'a-spk'].forEach(id => {
-        document.getElementById(id).value = '';
-    });
-    document.getElementById('a-price').value = '0';
+    try {
+        const payload = {
+            title,
+            category: document.getElementById('a-cat').value,
+            date,
+            time:     document.getElementById('a-time').value + ":00",
+            location: document.getElementById('a-loc').value  || 'TBD',
+            speaker:  document.getElementById('a-spk').value  || 'TBD',
+            capacity: cap,
+            price:    parseInt(document.getElementById('a-price').value) || 0,
+            status:   'upcoming',
+        };
 
-    updateStats();
-    renderEvents();
-    renderAdmin();
-    buildTicker();
-    toast(`Event "${ev.title}" created successfully!`, 'success');
+        const ev = await apiFetch("/events", {
+            method: "POST",
+            body:   JSON.stringify(payload),
+        });
+
+        ['a-title', 'a-cap', 'a-date', 'a-loc', 'a-spk'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        document.getElementById('a-price').value = '0';
+
+        await Promise.all([updateStats(), renderEvents(), renderAdmin(), buildTicker()]);
+        toast(`Event "${ev.title}" created successfully! ✅`, 'success');
+
+    } catch (err) {
+        toast(err.message || 'Failed to create event.', 'error');
+    } finally {
+        addBtn.disabled    = false;
+        addBtn.textContent = 'Add Event';
+    }
 }
 
-// ── Delete event ───────────────────────────────
-function deleteEvent(id) {
-    const idx = events.findIndex(e => e.id === id);
-    if (idx !== -1) events.splice(idx, 1);
-    updateStats();
-    renderEvents();
-    renderAdmin();
-    buildTicker();
-    toast('Event removed.', 'info');
+// ── Delete event via API ───────────────────────
+async function deleteEvent(id) {
+    if (!confirm('Are you sure you want to remove this event?')) return;
+
+    try {
+        await apiFetch(`/events/${id}`, { method: "DELETE" });
+        await Promise.all([updateStats(), renderEvents(), renderAdmin(), buildTicker()]);
+        toast('Event removed.', 'info');
+    } catch (err) {
+        toast(err.message || 'Failed to delete event.', 'error');
+    }
 }
