@@ -7,11 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/styles.css" />
     <style>
-        body { background: var(--ink); }
-
-        /* Override noise texture color for dark bg */
-        body::after { opacity: 0.04; }
-
         .login-wrap {
             min-height: 100vh;
             display: flex;
@@ -25,20 +20,20 @@
 
         .login-back {
             position: absolute;
-            top: 24px;
-            left: 24px;
-            font-size: 0.75rem;
+            top: 28px;
+            left: 28px;
+            font-size: 0.72rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: rgba(255,255,255,0.4);
+            color: var(--ink3);
             text-decoration: none;
-            border: 1px solid rgba(255,255,255,0.15);
+            border: 1px solid var(--rule);
             padding: 6px 12px;
             border-radius: var(--radius);
             transition: all 0.18s;
         }
-        .login-back:hover { color: rgba(255,255,255,0.9); border-color: rgba(255,255,255,0.4); }
+        .login-back:hover { color: var(--ink); border-color: var(--ink); }
 
         .login-brand {
             display: flex;
@@ -46,10 +41,6 @@
             gap: 10px;
             margin-bottom: 8px;
         }
-
-        /* Override brand colors for dark bg */
-        .login-brand .brand-name { color: var(--paper); }
-        .login-brand .brand-tag  { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
 
         .login-tagline {
             font-size: 0.72rem;
@@ -63,12 +54,12 @@
 
         .login-card {
             background: var(--paper);
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid var(--rule);
             border-top: 3px solid var(--amber);
             border-radius: var(--radius);
             width: 100%;
             max-width: 440px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            box-shadow: var(--shadow);
             animation: fadeUp 0.35s ease both;
             overflow: hidden;
         }
@@ -100,10 +91,7 @@
             margin-bottom: 4px;
         }
 
-        .login-card-sub {
-            font-size: 0.82rem;
-            color: var(--ink3);
-        }
+        .login-card-sub { font-size: 0.82rem; color: var(--ink3); }
 
         .login-card-body   { padding: 22px 24px; }
         .login-card-footer { padding: 16px 24px; border-top: 1px solid var(--rule); }
@@ -117,8 +105,8 @@
             margin-bottom: 18px;
             border-left: 3px solid;
         }
-        .notice.error   { display: block; background: #fde0db; color: var(--accent);  border-color: var(--accent); }
-        .notice.success { display: block; background: #d9f2e6; color: var(--green);   border-color: var(--green); }
+        .notice.error   { display: block; background: #fde0db; color: var(--accent); border-color: var(--accent); }
+        .notice.success { display: block; background: #d9f2e6; color: var(--green);  border-color: var(--green); }
 
         .login-hint {
             font-size: 0.75rem;
@@ -131,8 +119,7 @@
             border-radius: var(--radius);
         }
 
-        /* Amber submit button for admin */
-        .btn-admin {
+        .btn-amber {
             width: 100%;
             background: var(--amber);
             color: white;
@@ -147,19 +134,19 @@
             font-family: 'Outfit', sans-serif;
             transition: all 0.18s;
         }
-        .btn-admin:hover    { background: #a86510; }
-        .btn-admin:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-amber:hover    { background: #a86510; }
+        .btn-amber:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
     <div class="login-wrap">
         <a class="login-back" href="login.html">← Back</a>
 
-        <div class="login-brand">
+        <div class="login-brand fade-up">
             <div class="brand-name">EventFlow</div>
             <div class="brand-tag">Capacity Manager</div>
         </div>
-        <div class="login-tagline">Admin Access Only</div>
+        <div class="login-tagline fade-up d1">Admin Access Only</div>
 
         <div class="login-card">
             <div class="login-card-header">
@@ -169,7 +156,6 @@
             </div>
             <div class="login-card-body">
                 <div id="a-notice" class="notice"></div>
-
                 <div class="form-group">
                     <label class="form-label">Email *</label>
                     <input type="email" class="form-input" id="a-email" placeholder="admin@eventflow.com" />
@@ -178,13 +164,12 @@
                     <label class="form-label">Password *</label>
                     <input type="password" class="form-input" id="a-password" placeholder="••••••••" />
                 </div>
-
                 <div class="login-hint">
                     Default — <strong>admin@eventflow.com</strong> / <strong>admin123</strong>
                 </div>
             </div>
             <div class="login-card-footer">
-                <button class="btn-admin" id="a-submit" onclick="handleAdminLogin()">
+                <button class="btn-amber" id="a-submit" onclick="handleAdminLogin()">
                     Sign In as Admin
                 </button>
             </div>
@@ -214,7 +199,6 @@
             const email    = document.getElementById('a-email').value.trim();
             const password = document.getElementById('a-password').value;
             if (!email || !password) { showNotice('Email and password are required.'); return; }
-
             setLoading(true);
             try {
                 const res  = await fetch(`${API_BASE}/auth/login`, {

@@ -53,7 +53,11 @@
             text-decoration: none;
             transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
             display: block;
+            animation: fadeUp 0.4s ease both;
         }
+
+        .role-card.d1 { animation-delay: 0.06s; }
+        .role-card.d2 { animation-delay: 0.12s; }
 
         .role-card:hover {
             transform: translateY(-3px);
@@ -71,39 +75,39 @@
 
         .role-card-title {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.6rem;
+            font-size: 1.8rem;
             letter-spacing: 2px;
             color: var(--ink);
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
 
         .role-card-sub {
             font-size: 0.78rem;
             color: var(--ink3);
-            line-height: 1.5;
+            line-height: 1.6;
+            margin-bottom: 20px;
         }
 
-        .role-card-arrow {
+        .role-card-cta {
             display: inline-block;
-            margin-top: 18px;
             font-size: 0.72rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            padding: 6px 14px;
+            padding: 7px 16px;
             border-radius: var(--radius);
             border: 1px solid var(--rule);
             color: var(--ink3);
             transition: all 0.18s;
         }
 
-        .role-card.student:hover .role-card-arrow {
-            background: var(--accent2);
-            color: white;
-            border-color: var(--accent2);
+        .role-card.student:hover .role-card-cta {
+            background: var(--ink);
+            color: var(--paper);
+            border-color: var(--ink);
         }
 
-        .role-card.admin:hover .role-card-arrow {
+        .role-card.admin:hover .role-card-cta {
             background: var(--amber);
             color: white;
             border-color: var(--amber);
@@ -116,24 +120,24 @@
 </head>
 <body>
     <div class="login-wrap">
-        <div class="login-brand">
+        <div class="login-brand fade-up">
             <div class="brand-name">EventFlow</div>
             <div class="brand-tag">Capacity Manager</div>
         </div>
-        <div class="login-tagline">Who are you signing in as?</div>
+        <div class="login-tagline fade-up d1">Who are you signing in as?</div>
 
         <div class="role-cards">
-            <a class="role-card student fade-up d1" href="student-login.html">
+            <a class="role-card student d1" href="student-login.html">
                 <span class="role-card-icon">🎓</span>
                 <div class="role-card-title">Student</div>
                 <div class="role-card-sub">Browse events, register for sessions, and manage your bookings.</div>
-                <span class="role-card-arrow">Sign In →</span>
+                <span class="role-card-cta">Sign In →</span>
             </a>
-            <a class="role-card admin fade-up d2" href="admin-login.html">
+            <a class="role-card admin d2" href="admin-login.html">
                 <span class="role-card-icon">🛡️</span>
                 <div class="role-card-title">Admin</div>
                 <div class="role-card-sub">Manage events, monitor capacity, and control registrations.</div>
-                <span class="role-card-arrow">Sign In →</span>
+                <span class="role-card-cta">Sign In →</span>
             </a>
         </div>
     </div>

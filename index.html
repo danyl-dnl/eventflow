@@ -15,9 +15,12 @@
             border-left: 1px solid var(--rule);
             margin-left: 4px;
         }
-        .nav-user-info { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; }
+        .nav-user-info { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.3; }
         .nav-user-name { font-size: 0.78rem; font-weight: 600; color: var(--ink); }
-        .nav-user-role { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--accent2); }
+        .nav-user-role {
+            font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--accent2);
+        }
         .btn-logout {
             padding: 7px 14px; border-radius: var(--radius);
             font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
@@ -29,7 +32,6 @@
     </style>
 </head>
 <body>
-
     <div class="toast-stack" id="toastStack"></div>
 
     <!-- REGISTRATION MODAL -->
@@ -43,13 +45,10 @@
                 <button class="modal-close" onclick="closeModal()">&#x2715;</button>
             </div>
             <div class="modal-body">
-                <div class="ticket-summary" id="modalSummary">
+                <div class="ticket-summary">
                     <div class="ticket-row"><span>Date</span><span id="ms-date">—</span></div>
                     <div class="ticket-row"><span>Location</span><span id="ms-location">—</span></div>
-                    <div class="ticket-row">
-                        <span>Available seats</span>
-                        <span id="ms-seats" style="font-weight:700;color:var(--green)">—</span>
-                    </div>
+                    <div class="ticket-row"><span>Available seats</span><span id="ms-seats" style="font-weight:700;color:var(--green)">—</span></div>
                     <div class="ticket-row total"><span>Ticket price</span><span id="ms-price">—</span></div>
                 </div>
                 <div class="form-group">
@@ -90,7 +89,7 @@
                 </div>
                 <div id="waitlistNotice" style="display:none;margin-top:16px;padding:12px 14px;background:#fdebd3;border-radius:var(--radius);border-left:3px solid var(--amber)">
                     <p style="font-size:0.8rem;font-weight:600;color:var(--amber)">This event is nearly full.</p>
-                    <p style="font-size:0.78rem;color:var(--ink3);margin-top:3px">You may be placed on the waitlist.</p>
+                    <p style="font-size:0.78rem;color:var(--ink3);margin-top:3px">You may be placed on the waitlist. We'll notify you if a seat opens up.</p>
                 </div>
             </div>
             <div class="modal-footer">
