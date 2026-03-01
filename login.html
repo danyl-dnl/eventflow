@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EventFlow — Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+        /* ── Login-specific layout ── */
+        .login-wrap {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Brand ── */
+        .login-brand {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .login-tagline {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--ink3);
+            margin-bottom: 36px;
+            text-align: center;
+        }
+
+        /* ── Role selector ── */
+        .role-selector {
+            display: flex;
+            gap: 0;
+            margin-bottom: 28px;
+            border: 1px solid var(--rule);
+            border-radius: var(--radius);
+            overflow: hidden;
+            width: 100%;
+            max-width: 440px;
+            background: var(--paper);
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 11px 0;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--ink3);
+            background: transparent;
+            border: none;
+            border-right: 1px solid var(--rule);
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+
+        .role-btn:last-child { border-right: none; }
+        .role-btn:hover { color: var(--ink); background: var(--bg); }
+        .role-btn.active { background: var(--ink); color: var(--paper); }
+
+        /* ── Card ── */
+        .login-card {
+            background: var(--paper);
+            border: 1px solid var(--rule);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 440px;
+            box-shadow: var(--shadow);
+            animation: fadeUp 0.35s ease both;
+            overflow: hidden;
+        }
+
+        /* Amber top strip for admin */
+        .admin-strip {
+            height: 3px;
+            background: var(--amber);
+            display: none;
+        }
+        .login-card.admin-mode .admin-strip { display: block; }
+
+        .login-card-header {
+            padding: 22px 24px 18px;
+            border-bottom: 1px solid var(--rule);
+        }
+
+        .login-card-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            color: var(--ink);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .login-card-sub {
+            font-size: 0.82rem;
+            color: var(--ink3);
+        }
+
+        .login-card-body   { padding: 22px 24px; }
+        .login-card-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--rule);
+        }
+
+        /* ── Form tabs (Login / Register) ── */
+        .form-tabs {
+            display: flex;
+            margin-bottom: 22px;
+            border-bottom: 2px solid var(--rule);
+        }
+
+        .form-tab {
+            padding: 0 0 12px;
+            margin-right: 24px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ink3);
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+
+        .form-tab.active {
+            color: var(--ink);
+            border-bottom-color: var(--ink);
+        }
+
+        /* ── Notice ── */
+        .notice {
+            display: none;
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 18px;
+            border-left: 3px solid;
+        }
+
+        .notice.error {
+            display: block;
+            background: #fde0db;
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .notice.success {
+            display: block;
+            background: #d9f2e6;
+            color: var(--green);
+            border-color: var(--green);
+        }
+
+        /* ── Admin badge ── */
+        .admin-badge {
+            display: inline-block;
+            background: #fdebd3;
+            color: var(--amber);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 3px 8px;
+            border-radius: 2px;
+            margin-bottom: 10px;
+        }
+
+        /* ── Hint box ── */
+        .login-hint {
+            font-size: 0.75rem;
+            color: var(--ink3);
+            text-align: center;
+            margin-top: 16px;
+            padding: 10px 14px;
+            background: var(--bg);
+            border: 1px solid var(--rule);
+            border-radius: var(--radius);
+        }
+
+        @media (max-width: 480px) {
+            .login-card-title { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-wrap">
+
+        <!-- Brand -->
+        <div class="login-brand">
+            <div class="brand-name">EventFlow</div>
+            <div class="brand-tag">Capacity Manager</div>
+        </div>
+        <div class="login-tagline">Sign in to continue</div>
+
+        <!-- Role Selector -->
+        <div class="role-selector">
+            <button class="role-btn active" id="role-student" onclick="selectRole('student')">
+                🎓 &nbsp;Student
+            </button>
+            <button class="role-btn" id="role-admin" onclick="selectRole('admin')">
+                🛡️ &nbsp;Admin
+            </button>
+        </div>
+
+        <!-- ── STUDENT CARD ── -->
+        <div class="login-card" id="student-card">
+            <div class="admin-strip"></div>
+            <div class="login-card-header">
+                <div class="login-card-title">Welcome Back</div>
+                <div class="login-card-sub">Register for events and track your seat bookings.</div>
+            </div>
+            <div class="login-card-body">
+
+                <div class="form-tabs">
+                    <button class="form-tab active" id="s-tab-login"    onclick="studentTab('login')">Login</button>
+                    <button class="form-tab"         id="s-tab-register" onclick="studentTab('register')">Register</button>
+                </div>
+
+                <div id="s-notice" class="notice"></div>
+
+                <!-- Login form -->
+                <div id="s-login-form">
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-input" id="s-email" placeholder="you@example.com" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="form-label">Password *</label>
+                        <input type="password" class="form-input" id="s-password" placeholder="••••••••" />
+                    </div>
+                </div>
+
+                <!-- Register form -->
+                <div id="s-register-form" style="display:none">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-input" id="s-name" placeholder="Your full name" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-input" id="s-reg-email" placeholder="you@example.com" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="form-label">Password *</label>
+                        <input type="password" class="form-input" id="s-reg-password" placeholder="Min. 6 characters" />
+                    </div>
+                </div>
+
+            </div>
+            <div class="login-card-footer">
+                <button class="btn-primary" id="s-submit" onclick="handleStudentSubmit()" style="width:100%">
+                    Sign In
+                </button>
+            </div>
+        </div>
+
+        <!-- ── ADMIN CARD ── -->
+        <div class="login-card admin-mode" id="admin-card" style="display:none">
+            <div class="admin-strip"></div>
+            <div class="login-card-header">
+                <div class="admin-badge">Admin Access</div>
+                <div class="login-card-title">Admin Login</div>
+                <div class="login-card-sub">Manage events, capacity, and registrations.</div>
+            </div>
+            <div class="login-card-body">
+
+                <div id="a-notice" class="notice"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-input" id="a-email" placeholder="admin@eventflow.com" />
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                    <label class="form-label">Password *</label>
+                    <input type="password" class="form-input" id="a-password" placeholder="••••••••" />
+                </div>
+
+                <div class="login-hint">
+                    Default — <strong>admin@eventflow.com</strong> / <strong>admin123</strong>
+                </div>
+
+            </div>
+            <div class="login-card-footer">
+                <button class="btn-primary" id="a-submit" onclick="handleAdminLogin()" style="width:100%">
+                    Sign In as Admin
+                </button>
+            </div>
+        </div>
+
+    </div><!-- /login-wrap -->
+
+    <script>
+        const API_BASE = "http://127.0.0.1:8000/api/v1";
+
+        let currentRole = 'student';
+        let studentMode = 'login';
+
+        // ── Role toggle ──────────────────────────────
+        function selectRole(role) {
+            currentRole = role;
+            document.getElementById('role-student').classList.toggle('active', role === 'student');
+            document.getElementById('role-admin').classList.toggle('active',   role === 'admin');
+            document.getElementById('student-card').style.display = role === 'student' ? 'block' : 'none';
+            document.getElementById('admin-card').style.display   = role === 'admin'   ? 'block' : 'none';
+            clearNotices();
+        }
+
+        // ── Student tab toggle ───────────────────────
+        function studentTab(tab) {
+            studentMode = tab;
+            document.getElementById('s-tab-login').classList.toggle('active',    tab === 'login');
+            document.getElementById('s-tab-register').classList.toggle('active', tab === 'register');
+            document.getElementById('s-login-form').style.display    = tab === 'login'    ? 'block' : 'none';
+            document.getElementById('s-register-form').style.display = tab === 'register' ? 'block' : 'none';
+            document.getElementById('s-submit').textContent          = tab === 'login' ? 'Sign In' : 'Create Account';
+            clearNotices();
+        }
+
+        // ── Notices ──────────────────────────────────
+        function clearNotices() {
+            ['s-notice', 'a-notice'].forEach(id => {
+                const el = document.getElementById(id);
+                el.className = 'notice';
+                el.textContent = '';
+            });
+        }
+
+        function showNotice(id, msg, type = 'error') {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.className = `notice ${type}`;
+        }
+
+        function setLoading(btnId, loading, label) {
+            const btn       = document.getElementById(btnId);
+            btn.disabled    = loading;
+            btn.textContent = loading ? 'Please wait...' : label;
+        }
+
+        // ── Handoff token to index.html ──────────────
+        function handoff(data) {
+            sessionStorage.setItem('_ef_handoff', JSON.stringify({
+                token: data.access_token,
+                user:  data.user,
+            }));
+            window.location.href = 'index.html';
+        }
+
+        // ── Student submit dispatcher ────────────────
+        async function handleStudentSubmit() {
+            studentMode === 'login' ? await handleStudentLogin() : await handleStudentRegister();
+        }
+
+        async function handleStudentLogin() {
+            const email    = document.getElementById('s-email').value.trim();
+            const password = document.getElementById('s-password').value;
+            if (!email || !password) { showNotice('s-notice', 'Email and password are required.'); return; }
+
+            setLoading('s-submit', true, 'Sign In');
+            try {
+                const res  = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, role: 'student' }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Login failed');
+                handoff(data);
+            } catch (err) {
+                showNotice('s-notice', err.message);
+                setLoading('s-submit', false, 'Sign In');
+            }
+        }
+
+        async function handleStudentRegister() {
+            const name     = document.getElementById('s-name').value.trim();
+            const email    = document.getElementById('s-reg-email').value.trim();
+            const password = document.getElementById('s-reg-password').value;
+            if (!name || !email || !password) { showNotice('s-notice', 'All fields are required.'); return; }
+            if (password.length < 6) { showNotice('s-notice', 'Password must be at least 6 characters.'); return; }
+
+            setLoading('s-submit', true, 'Create Account');
+            try {
+                const res  = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Registration failed');
+                handoff(data);
+            } catch (err) {
+                showNotice('s-notice', err.message);
+                setLoading('s-submit', false, 'Create Account');
+            }
+        }
+
+        async function handleAdminLogin() {
+            const email    = document.getElementById('a-email').value.trim();
+            const password = document.getElementById('a-password').value;
+            if (!email || !password) { showNotice('a-notice', 'Email and password are required.'); return; }
+
+            setLoading('a-submit', true, 'Sign In as Admin');
+            try {
+                const res  = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, role: 'admin' }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Login failed');
+                handoff(data);
+            } catch (err) {
+                showNotice('a-notice', err.message);
+                setLoading('a-submit', false, 'Sign In as Admin');
+            }
+        }
+
+        // ── Enter key support ────────────────────────
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Enter') return;
+            if (currentRole === 'admin') { handleAdminLogin(); return; }
+            handleStudentSubmit();
+        });
+    </script>
+
+</body>
+</html>

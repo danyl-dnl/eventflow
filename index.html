@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EventFlow — Registration & Capacity Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+    <!-- TOAST STACK -->
+    <div class="toast-stack" id="toastStack"></div>
+
+    <!-- REGISTRATION MODAL -->
+    <div class="modal-overlay" id="regModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <div id="modalCategory" class="event-category cat-conference" style="margin-bottom:6px">Conference</div>
+                    <div class="modal-title" id="modalTitle">Event Name</div>
+                </div>
+                <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Event summary -->
+                <div class="ticket-summary" id="modalSummary">
+                    <div class="ticket-row"><span>Date</span><span id="ms-date">—</span></div>
+                    <div class="ticket-row"><span>Location</span><span id="ms-location">—</span></div>
+                    <div class="ticket-row">
+                        <span>Available seats</span>
+                        <span id="ms-seats" style="font-weight:700;color:var(--green)">—</span>
+                    </div>
+                    <div class="ticket-row total"><span>Ticket price</span><span id="ms-price">—</span></div>
+                </div>
+
+                <!-- Form fields -->
+                <div class="form-group">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" class="form-input" id="regName" placeholder="Your full name" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-input" id="regEmail" placeholder="you@example.com" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-input" id="regPhone" placeholder="+91 00000 00000" />
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:18px">
+                    <label class="form-label">Organisation</label>
+                    <input type="text" class="form-input" id="regOrg" placeholder="Company / College / Independent" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="form-label">Ticket Type</label>
+                        <select class="form-input form-select" id="regTicket">
+                            <option value="general">General — Free</option>
+                            <option value="student">Student — Free</option>
+                            <option value="vip">VIP — ₹999</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="form-label">Number of Seats</label>
+                        <select class="form-input form-select" id="regSeats">
+                            <option value="1">1 seat</option>
+                            <option value="2">2 seats</option>
+                            <option value="3">3 seats</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Waitlist notice (shown when near full) -->
+                <div id="waitlistNotice" style="display:none;margin-top:16px;padding:12px 14px;background:#fdebd3;border-radius:var(--radius);border-left:3px solid var(--amber)">
+                    <p style="font-size:0.8rem;font-weight:600;color:var(--amber)">This event is nearly full.</p>
+                    <p style="font-size:0.78rem;color:var(--ink3);margin-top:3px">You may be placed on the waitlist. We'll notify you if a seat opens up.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn-primary" id="submitBtn" onclick="submitRegistration()">Confirm Registration</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── APP ──────────────────────────────── -->
+    <div class="app">
+
+        <!-- HEADER -->
+        <header class="header">
+            <div class="brand">
+                <div class="brand-name">EventFlow</div>
+                <div class="brand-tag">Capacity Manager</div>
+            </div>
+            <nav class="nav">
+                <button class="nav-btn active" onclick="switchTab('events', this)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle">
+                        <rect x="3" y="4" width="18" height="18" rx="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span>Events</span>
+                </button>
+                <button class="nav-btn" onclick="switchTab('registrations', this)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span>Registrations</span>
+                </button>
+                <button class="nav-btn" onclick="switchTab('admin', this)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;vertical-align:middle">
+                        <path d="M12 20h9"/>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                    </svg>
+                    <span>Admin</span>
+                </button>
+            </nav>
+        </header>
+
+        <!-- TICKER -->
+        <div class="ticker-wrap">
+            <div class="ticker-track" id="tickerTrack"></div>
+        </div>
+
+        <!-- ══ TAB: EVENTS ══ -->
+        <div id="tab-events">
+            <div class="page-header fade-up">
+                <div class="page-title">Upcoming Events</div>
+                <div class="page-subtitle">Browse and register for events — seats are limited and fill fast</div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-row fade-up d1">
+                <div class="stat-card blue">
+                    <div class="stat-label">Total Events</div>
+                    <div class="stat-value" id="stat-total">0</div>
+                    <div class="stat-sub">All categories</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-label">Available Seats</div>
+                    <div class="stat-value" id="stat-seats">0</div>
+                    <div class="stat-sub">Across all events</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-label">Registrations</div>
+                    <div class="stat-value" id="stat-regs">0</div>
+                    <div class="stat-sub">Confirmed today</div>
+                </div>
+                <div class="stat-card amber">
+                    <div class="stat-label">Waitlisted</div>
+                    <div class="stat-value" id="stat-wait">0</div>
+                    <div class="stat-sub">Pending seat</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px" class="fade-up d2">
+                <div class="filters" style="margin-bottom:0">
+                    <button class="filter-chip active" onclick="filterEvents('all', this)">All</button>
+                    <button class="filter-chip" onclick="filterEvents('conference', this)">Conference</button>
+                    <button class="filter-chip" onclick="filterEvents('workshop', this)">Workshop</button>
+                    <button class="filter-chip" onclick="filterEvents('summit', this)">Summit</button>
+                    <button class="filter-chip" onclick="filterEvents('networking', this)">Networking</button>
+                </div>
+                <input class="search-input" type="text" placeholder="Search events..."
+                       oninput="searchEvents(this.value)" id="eventSearch" />
+            </div>
+
+            <div class="section-label fade-up d2">
+                <span id="events-count-label">All Events</span>
+                <span id="sort-label" style="cursor:pointer" onclick="toggleSort()">Sort: Date &#x2193;</span>
+            </div>
+
+            <div class="events-grid fade-up d3" id="eventsGrid"></div>
+        </div>
+
+        <!-- ══ TAB: REGISTRATIONS ══ -->
+        <div id="tab-registrations" style="display:none">
+            <div class="page-header fade-up">
+                <div class="page-title">My Registrations</div>
+                <div class="page-subtitle">Manage your event registrations and waitlist entries</div>
+            </div>
+
+            <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap" class="fade-up d1">
+                <input class="search-input" type="text" placeholder="Search by name or event..."
+                       oninput="searchRegs(this.value)" style="flex:1;min-width:200px" />
+                <select class="form-input form-select" style="width:auto;padding:8px 32px 8px 12px"
+                        onchange="filterRegs(this.value)">
+                    <option value="all">All Status</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="waitlist">Waitlisted</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+
+            <div class="table-wrap fade-up d2">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Registrant</th>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Ticket</th>
+                            <th>Seats</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="regTableBody"></tbody>
+                </table>
+            </div>
+            <div id="regEmpty" class="empty" style="display:none">
+                <div class="empty-title">No Registrations Yet</div>
+                <p style="font-size:0.88rem">Register for an event to see it here.</p>
+            </div>
+        </div>
+
+        <!-- ══ TAB: ADMIN ══ -->
+        <div id="tab-admin" style="display:none">
+            <div class="page-header fade-up">
+                <div class="page-title">Admin Panel</div>
+                <div class="page-subtitle">Manage events, monitor capacity, and control registrations</div>
+            </div>
+
+            <div class="admin-grid fade-up d1">
+                <!-- Create Event Form -->
+                <div class="admin-card">
+                    <div class="admin-card-title">Create New Event</div>
+                    <div class="form-group">
+                        <label class="form-label">Event Title *</label>
+                        <input type="text" class="form-input" id="a-title" placeholder="e.g. TechSummit 2025" />
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0">
+                            <label class="form-label">Category</label>
+                            <select class="form-input form-select" id="a-cat">
+                                <option value="conference">Conference</option>
+                                <option value="workshop">Workshop</option>
+                                <option value="summit">Summit</option>
+                                <option value="networking">Networking</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0">
+                            <label class="form-label">Total Capacity *</label>
+                            <input type="number" class="form-input" id="a-cap" placeholder="e.g. 200" min="1" />
+                        </div>
+                    </div>
+                    <div class="form-row" style="margin-top:14px">
+                        <div class="form-group" style="margin-bottom:0">
+                            <label class="form-label">Date *</label>
+                            <input type="date" class="form-input" id="a-date" />
+                        </div>
+                        <div class="form-group" style="margin-bottom:0">
+                            <label class="form-label">Time</label>
+                            <input type="time" class="form-input" id="a-time" value="10:00" />
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top:14px">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" id="a-loc" placeholder="Venue / City or Online" />
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0">
+                            <label class="form-label">Speaker</label>
+                            <input type="text" class="form-input" id="a-spk" placeholder="Speaker name" />
+                        </div>
+                        <div class="form-group" style="margin-bottom:0">
+                            <label class="form-label">Price (₹)</label>
+                            <input type="number" class="form-input" id="a-price" placeholder="0 for free" min="0" value="0" />
+                        </div>
+                    </div>
+                    <button class="btn-primary" style="width:100%;margin-top:18px" onclick="addEvent()">Add Event</button>
+                </div>
+
+                <!-- Live Capacity Monitor -->
+                <div class="admin-card">
+                    <div class="admin-card-title">Live Capacity Monitor</div>
+                    <div id="adminCapList"></div>
+                </div>
+            </div>
+
+            <!-- Event Management Table -->
+            <div class="section-label fade-up d2"><span>Event Management</span></div>
+            <div class="table-wrap fade-up d3">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Capacity</th>
+                            <th>Registered</th>
+                            <th>Waitlist</th>
+                            <th>Fill Rate</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div><!-- /app -->
+
+    <!-- JS — order matters: data → utils → features → app -->
+    <script src="js/data.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/ticker.js"></script>
+    <script src="js/events.js"></script>
+    <script src="js/modal.js"></script>
+    <script src="js/registrations.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+</html>
