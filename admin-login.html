@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EventFlow — Admin Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+        body { background: var(--ink); }
+
+        /* Override noise texture color for dark bg */
+        body::after { opacity: 0.04; }
+
+        .login-wrap {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-back {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 6px 12px;
+            border-radius: var(--radius);
+            transition: all 0.18s;
+        }
+        .login-back:hover { color: rgba(255,255,255,0.9); border-color: rgba(255,255,255,0.4); }
+
+        .login-brand {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        /* Override brand colors for dark bg */
+        .login-brand .brand-name { color: var(--paper); }
+        .login-brand .brand-tag  { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
+
+        .login-tagline {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--amber);
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .login-card {
+            background: var(--paper);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-top: 3px solid var(--amber);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: fadeUp 0.35s ease both;
+            overflow: hidden;
+        }
+
+        .login-card-header {
+            padding: 22px 24px 18px;
+            border-bottom: 1px solid var(--rule);
+        }
+
+        .admin-badge {
+            display: inline-block;
+            background: #fdebd3;
+            color: var(--amber);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 3px 8px;
+            border-radius: 2px;
+            margin-bottom: 10px;
+        }
+
+        .login-card-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            color: var(--ink);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .login-card-sub {
+            font-size: 0.82rem;
+            color: var(--ink3);
+        }
+
+        .login-card-body   { padding: 22px 24px; }
+        .login-card-footer { padding: 16px 24px; border-top: 1px solid var(--rule); }
+
+        .notice {
+            display: none;
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 18px;
+            border-left: 3px solid;
+        }
+        .notice.error   { display: block; background: #fde0db; color: var(--accent);  border-color: var(--accent); }
+        .notice.success { display: block; background: #d9f2e6; color: var(--green);   border-color: var(--green); }
+
+        .login-hint {
+            font-size: 0.75rem;
+            color: var(--ink3);
+            text-align: center;
+            margin-top: 16px;
+            padding: 10px 14px;
+            background: var(--bg);
+            border: 1px solid var(--rule);
+            border-radius: var(--radius);
+        }
+
+        /* Amber submit button for admin */
+        .btn-admin {
+            width: 100%;
+            background: var(--amber);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.18s;
+        }
+        .btn-admin:hover    { background: #a86510; }
+        .btn-admin:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div class="login-wrap">
+        <a class="login-back" href="login.html">← Back</a>
+
+        <div class="login-brand">
+            <div class="brand-name">EventFlow</div>
+            <div class="brand-tag">Capacity Manager</div>
+        </div>
+        <div class="login-tagline">Admin Access Only</div>
+
+        <div class="login-card">
+            <div class="login-card-header">
+                <div class="admin-badge">🛡️ Admin Access</div>
+                <div class="login-card-title">Admin Login</div>
+                <div class="login-card-sub">Manage events, capacity, and registrations.</div>
+            </div>
+            <div class="login-card-body">
+                <div id="a-notice" class="notice"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-input" id="a-email" placeholder="admin@eventflow.com" />
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                    <label class="form-label">Password *</label>
+                    <input type="password" class="form-input" id="a-password" placeholder="••••••••" />
+                </div>
+
+                <div class="login-hint">
+                    Default — <strong>admin@eventflow.com</strong> / <strong>admin123</strong>
+                </div>
+            </div>
+            <div class="login-card-footer">
+                <button class="btn-admin" id="a-submit" onclick="handleAdminLogin()">
+                    Sign In as Admin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "http://127.0.0.1:8000/api/v1";
+
+        function showNotice(msg, type = 'error') {
+            const el = document.getElementById('a-notice');
+            el.textContent = msg; el.className = `notice ${type}`;
+        }
+
+        function setLoading(loading) {
+            const btn = document.getElementById('a-submit');
+            btn.disabled = loading;
+            btn.textContent = loading ? 'Signing in...' : 'Sign In as Admin';
+        }
+
+        function handoff(data) {
+            sessionStorage.setItem('_ef_handoff', JSON.stringify({ token: data.access_token, user: data.user }));
+            window.location.href = 'admin.html';
+        }
+
+        async function handleAdminLogin() {
+            const email    = document.getElementById('a-email').value.trim();
+            const password = document.getElementById('a-password').value;
+            if (!email || !password) { showNotice('Email and password are required.'); return; }
+
+            setLoading(true);
+            try {
+                const res  = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, role: 'admin' }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Login failed');
+                handoff(data);
+            } catch (err) {
+                showNotice(err.message);
+                setLoading(false);
+            }
+        }
+
+        document.addEventListener('keydown', e => { if (e.key === 'Enter') handleAdminLogin(); });
+    </script>
+</body>
+</html>
