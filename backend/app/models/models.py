@@ -1,7 +1,7 @@
 from datetime import date, time, datetime
 from sqlalchemy import (
     Column, Integer, String, Date, Time,
-    Boolean, ForeignKey, DateTime, Enum
+    Boolean, ForeignKey, DateTime, Enum, UniqueConstraint
 )
 from sqlalchemy.orm import relationship
 import enum
@@ -69,7 +69,11 @@ class Event(Base):
     status      = Column(Enum(StatusEnum), default=StatusEnum.upcoming)
     created_at  = Column(DateTime, default=datetime.utcnow)
 
-    registrations = relationship("Registration", back_populates="event")
+    registrations = relationship(
+        "Registration",
+        back_populates="event",
+        cascade="all, delete-orphan"   # FIX: deleting an event now cleans up its registrations
+    )
 
 
 # ── Registration ───────────────────────────────
@@ -88,3 +92,9 @@ class Registration(Base):
     registered_at   = Column(DateTime, default=datetime.utcnow)
 
     event = relationship("Event", back_populates="registrations")
+
+    __table_args__ = (
+        # FIX: prevents the same email from registering for the same event twice
+        # Only enforced on active (non-cancelled) registrations — see route-level check
+        UniqueConstraint("email", "event_id", name="uq_email_event"),
+    )

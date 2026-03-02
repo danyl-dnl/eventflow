@@ -2,9 +2,12 @@
 // EVENTS TAB — Grid, Filters & Search
 // ═══════════════════════════════════════════════
 
-let activeFilter = 'all';
-let searchQuery  = '';
-let sortAsc      = true;
+let activeFilter      = 'all';   // category filter
+let activeAvailability = 'all';  // NEW: availability filter
+let searchQuery       = '';
+let sortAsc           = true;
+let dateFrom          = '';      // NEW: date range start (YYYY-MM-DD)
+let dateTo            = '';      // NEW: date range end   (YYYY-MM-DD)
 
 // ── Stats from API ─────────────────────────────
 async function updateStats() {
@@ -19,18 +22,26 @@ async function updateStats() {
     }
 }
 
-// ── Fetch and render events ────────────────────
+// ── Build query string & fetch events ─────────
 async function renderEvents() {
     showLoading('eventsGrid');
 
     try {
-        let url = "/events?";
-        if (activeFilter !== 'all') url += `category=${activeFilter}&`;
-        if (searchQuery)            url += `search=${encodeURIComponent(searchQuery)}&`;
+        // ── Build URL with all active filters ─
+        const params = new URLSearchParams();
 
+        if (activeFilter !== 'all')       params.set('category',     activeFilter);
+        if (searchQuery)                  params.set('search',        searchQuery);
+        if (activeAvailability !== 'all') params.set('availability',  activeAvailability);
+        if (dateFrom)                     params.set('date_from',     dateFrom);
+        if (dateTo)                       params.set('date_to',       dateTo);
+
+        // Sort is handled server-side (always date asc from API),
+        // then optionally reversed client-side for the toggle
+        const url = `/events?${params.toString()}`;
         let events = await apiFetch(url);
 
-        // Client-side sort
+        // ── Client-side sort (date toggle) ────
         events.sort((a, b) =>
             sortAsc ? new Date(a.date) - new Date(b.date)
                     : new Date(b.date) - new Date(a.date)
@@ -118,7 +129,7 @@ async function renderEvents() {
     }
 }
 
-// ── Filter / search / sort controls ───────────
+// ── Category filter chips ──────────────────────
 function filterEvents(cat, btn) {
     activeFilter = cat;
     document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
@@ -126,15 +137,49 @@ function filterEvents(cat, btn) {
     renderEvents();
 }
 
+// ── Title / category search ────────────────────
 let searchTimeout;
 function searchEvents(q) {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
-        searchQuery = q.toLowerCase();
+        searchQuery = q.trim();
         renderEvents();
     }, 300); // debounce 300ms
 }
 
+// ── Date range filter ──────────────────────────
+// Called from date inputs in index.html:
+//   <input type="date" onchange="setDateFrom(this.value)">
+//   <input type="date" onchange="setDateTo(this.value)">
+function setDateFrom(val) {
+    dateFrom = val;   // YYYY-MM-DD string or '' when cleared
+    renderEvents();
+}
+
+function setDateTo(val) {
+    dateTo = val;
+    renderEvents();
+}
+
+function clearDateFilters() {
+    dateFrom = '';
+    dateTo   = '';
+    document.getElementById('date-from').value = '';
+    document.getElementById('date-to').value   = '';
+    renderEvents();
+}
+
+// ── Availability filter ────────────────────────
+// Called from availability chips / select in index.html:
+//   <button onclick="filterAvailability('available', this)">Available</button>
+function filterAvailability(val, btn) {
+    activeAvailability = val;
+    document.querySelectorAll('.avail-chip').forEach(c => c.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderEvents();
+}
+
+// ── Date sort toggle ───────────────────────────
 function toggleSort() {
     sortAsc = !sortAsc;
     document.getElementById('sort-label').textContent = `Sort: Date ${sortAsc ? '↓' : '↑'}`;

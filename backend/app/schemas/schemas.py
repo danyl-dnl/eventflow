@@ -86,6 +86,21 @@ class EventUpdate(BaseModel):
     price:    Optional[int]          = None
     status:   Optional[StatusEnum]   = None
 
+    @field_validator("capacity")
+    @classmethod
+    def capacity_must_be_positive(cls, v):
+        # FIX: capacity guard at schema level — route will enforce it can't go below registered
+        if v is not None and v < 1:
+            raise ValueError("Capacity must be at least 1")
+        return v
+
+    @field_validator("price")
+    @classmethod
+    def price_must_be_non_negative(cls, v):
+        if v is not None and v < 0:
+            raise ValueError("Price cannot be negative")
+        return v
+
 
 class EventResponse(EventBase):
     id:         int

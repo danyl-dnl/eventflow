@@ -29,6 +29,88 @@
         }
         .btn-logout:hover { border-color: var(--accent); color: var(--accent); }
         @media (max-width: 768px) { .nav-user-info { display: none; } }
+
+        /* ── NEW: Filter row layout ──────────────── */
+        .filter-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .filter-row-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--ink3);
+            min-width: 64px;
+        }
+
+        /* ── NEW: Date range inputs ──────────────── */
+        .date-filter-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .date-filter-group input[type="date"] {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            padding: 6px 10px;
+            border: 1px solid var(--rule);
+            border-radius: var(--radius);
+            background: var(--paper);
+            color: var(--ink);
+            cursor: pointer;
+            transition: border-color 0.18s;
+        }
+        .date-filter-group input[type="date"]:focus {
+            outline: none;
+            border-color: var(--ink);
+        }
+        .date-filter-group input[type="date"]::-webkit-calendar-picker-indicator {
+            opacity: 0.5;
+            cursor: pointer;
+        }
+        .date-sep {
+            font-size: 0.72rem;
+            color: var(--ink3);
+        }
+        .btn-clear-date {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 5px 10px;
+            border: 1px solid var(--rule);
+            border-radius: var(--radius);
+            background: none;
+            color: var(--ink3);
+            cursor: pointer;
+            transition: all 0.18s;
+        }
+        .btn-clear-date:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* ── NEW: Availability chips ─────────────── */
+        .avail-chip {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--rule);
+            background: none;
+            color: var(--ink3);
+            cursor: pointer;
+            transition: all 0.18s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .avail-chip:hover { border-color: var(--ink); color: var(--ink); }
+        .avail-chip.active.avail-all      { background: var(--ink);    color: var(--paper); border-color: var(--ink); }
+        .avail-chip.active.avail-available { background: var(--green);  color: #fff;         border-color: var(--green); }
+        .avail-chip.active.avail-waitlist  { background: var(--amber);  color: #fff;         border-color: var(--amber); }
+        .avail-chip.active.avail-sold-out  { background: var(--accent); color: #fff;         border-color: var(--accent); }
     </style>
 </head>
 <body>
@@ -140,16 +222,56 @@
                 <div class="stat-card red"><div class="stat-label">Registrations</div><div class="stat-value" id="stat-regs">0</div><div class="stat-sub">Confirmed</div></div>
                 <div class="stat-card amber"><div class="stat-label">Waitlisted</div><div class="stat-value" id="stat-wait">0</div><div class="stat-sub">Pending seat</div></div>
             </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px" class="fade-up d2">
-                <div class="filters" style="margin-bottom:0">
-                    <button class="filter-chip active" onclick="filterEvents('all', this)">All</button>
-                    <button class="filter-chip" onclick="filterEvents('conference', this)">Conference</button>
-                    <button class="filter-chip" onclick="filterEvents('workshop', this)">Workshop</button>
-                    <button class="filter-chip" onclick="filterEvents('summit', this)">Summit</button>
-                    <button class="filter-chip" onclick="filterEvents('networking', this)">Networking</button>
+
+            <!-- ── Filter bar ── -->
+            <div class="fade-up d2" style="margin-bottom:18px">
+
+                <!-- Row 1: Category chips + Search -->
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:10px">
+                    <div class="filters" style="margin-bottom:0">
+                        <button class="filter-chip active" onclick="filterEvents('all', this)">All</button>
+                        <button class="filter-chip" onclick="filterEvents('conference', this)">Conference</button>
+                        <button class="filter-chip" onclick="filterEvents('workshop', this)">Workshop</button>
+                        <button class="filter-chip" onclick="filterEvents('summit', this)">Summit</button>
+                        <button class="filter-chip" onclick="filterEvents('networking', this)">Networking</button>
+                    </div>
+                    <input class="search-input" type="text" placeholder="Search events..." oninput="searchEvents(this.value)" id="eventSearch" />
                 </div>
-                <input class="search-input" type="text" placeholder="Search events..." oninput="searchEvents(this.value)" id="eventSearch" />
+
+                <!-- Row 2: Date range filter -->
+                <div class="filter-row">
+                    <span class="filter-row-label">Date</span>
+                    <div class="date-filter-group">
+                        <input
+                            type="date"
+                            id="date-from"
+                            title="From date"
+                            onchange="setDateFrom(this.value)"
+                        />
+                        <span class="date-sep">to</span>
+                        <input
+                            type="date"
+                            id="date-to"
+                            title="To date"
+                            onchange="setDateTo(this.value)"
+                        />
+                        <button class="btn-clear-date" onclick="clearDateFilters()" title="Clear date filter">Clear</button>
+                    </div>
+                </div>
+
+                <!-- Row 3: Availability chips -->
+                <div class="filter-row">
+                    <span class="filter-row-label">Seats</span>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap">
+                        <button class="avail-chip avail-all active"       onclick="filterAvailability('all',       this)">All</button>
+                        <button class="avail-chip avail-available"        onclick="filterAvailability('available', this)">Available</button>
+                        <button class="avail-chip avail-waitlist"         onclick="filterAvailability('waitlist',  this)">Waitlist Only</button>
+                        <button class="avail-chip avail-sold-out"         onclick="filterAvailability('sold_out',  this)">Sold Out</button>
+                    </div>
+                </div>
+
             </div>
+
             <div class="section-label fade-up d2">
                 <span id="events-count-label">All Events</span>
                 <span id="sort-label" style="cursor:pointer" onclick="toggleSort()">Sort: Date ↓</span>
